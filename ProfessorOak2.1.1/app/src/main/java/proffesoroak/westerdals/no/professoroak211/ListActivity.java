@@ -3,6 +3,7 @@ package proffesoroak.westerdals.no.professoroak211;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ListView;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,6 +18,8 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        ListView listViewPokemons = (ListView) findViewById(R.id.listView);
+        listViewPokemons.setAdapter(new PokemonListAdapter(this));
 
         //this.responseListView = (ListView) findViewById(R.id.listView);
         getAndDisplayData();

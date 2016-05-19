@@ -1,8 +1,10 @@
 package proffesoroak.westerdals.no.professoroak211;
 
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -11,9 +13,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap map; //Nytt felt
+    String apiUrl = "http://10.0.3.2:2389/secret";
+    private TextView responseTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //Kaller super onCreate for åha mulighet til å spare
@@ -26,29 +37,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this); //Vil ha en referanse til kartet
     }
 
+    void getAndDisplayData() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(final Void... params) {
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+                    connection.setRequestProperty("X-Token", "give me access plz");
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    /**
-     * Hvis brukeren ikke har Google Play services innstallert, vil brukeren få beskejd om å benytte google play servicces
-     * @param googleMap
-     */
+                    try {
+                        InputStream inputStream = connection.getInputStream();
+                        Scanner scanner = new Scanner(inputStream);
+
+                        StringBuilder stringBuilder = new StringBuilder();
+                        while (scanner.hasNextLine()) {
+                            stringBuilder.append(scanner.nextLine());
+                        }
+
+                        return stringBuilder.toString();
+                    } catch (FileNotFoundException e) {
+                        return "GOT ERROR WITH CODE: " + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(final String response) {
+                super.onPostExecute(response);
+                responseTextView.setText(response);
+            }
+        }.execute();
+    }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151); //Location, Coordinates - Google Maps standardformaterte koordinater
-        //Er doubles, og sender is som parametre
-        //Kan brukes til å sette markers
-        //VELDIG relevant
+        LatLng sydney = new LatLng(-34, 151);
         map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney")); //Kan sende inn LatLng
         //Kan sette farger på markeren +++
 
