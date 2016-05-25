@@ -7,29 +7,22 @@
         android:id="@+id/textViewIdLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Id: "
+        android:text="@string/id"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"/>
-
-    <TextView
-        android:id="@+id/textViewId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/textViewIdLabel"
-        android:layout_alignBaseline="@id/textViewIdLabel" />
 
     <TextView
         android:id="@+id/textViewNameLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Name: "
+        android:text="@string/name"
         android:layout_below="@id/textViewIdLabel"/>
 
     <TextView
-        android:id="@+id/textViewName"
+        android:id="@+id/textViewAgeLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/textViewNameLabel"
-        android:layout_alignBaseline="@id/textViewNameLabel"/>
+        android:text="@string/age"
+        android:layout_below="@id/textViewNameLabel"/>
 
 </LinearLayout>

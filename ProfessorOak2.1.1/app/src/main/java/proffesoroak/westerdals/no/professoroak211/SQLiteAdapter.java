@@ -70,14 +70,15 @@ public class SQLiteAdapter {
     public boolean update(Long pokemonId, Pokemon pokemon) {
         ContentValues values = new ContentValues();
         values.put(POKEMON_NAME, pokemon.getName());
-        values.put(PERSON_AGE, person.getAge());
+        //values.put(PERSON_AGE, person.getAge());
 
         String whereClause = POKEMON_ID + " = ?";
-        String[] whereArgs = new String[]{personId.toString()};
+        //String[] whereArgs = new String[]{personId.toString()};
 
-        int numberOfRowsUpdated = sqLiteDatabase.update(TABLE_NAME, values, whereClause, whereArgs);
+        //int numberOfRowsUpdated = sqLiteDatabase.update(TABLE_NAME, values, whereClause, whereArgs);
 
-        return (numberOfRowsUpdated == 1);
+        //return (numberOfRowsUpdated == 1);
+        return false;
     }
 
     public boolean delete(Long pokemonId) {
@@ -94,7 +95,5 @@ public class SQLiteAdapter {
     }
 
 
-
-}
 
 }

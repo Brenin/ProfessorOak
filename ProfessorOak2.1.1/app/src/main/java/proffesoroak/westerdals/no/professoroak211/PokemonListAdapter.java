@@ -15,8 +15,13 @@ import java.util.List;
  * Created by Bruker on 19.05.2016.
  */
 public class PokemonListAdapter extends BaseAdapter {
-    private List<Pokemon> pokemons = new ArrayList<Pokemon>();
 
+    String POKEMON_ID;
+    String POKEMON_NAME;
+    String POKEMON_LNG;
+    String POKEMON_LAT;
+
+    private List<Pokemon> pokemon = new ArrayList<>();
     private Context context;
 
     private SQLiteAdapter sqLiteAdapter;
@@ -24,7 +29,7 @@ public class PokemonListAdapter extends BaseAdapter {
     public PokemonListAdapter(Context context) {
         this.context = context;
 
-        sqLiteAdapter = ListActivity.sqLiteAdapter;
+        //sqLiteAdapter = new ListActivity.sqLiteAdapter;
         sqLiteAdapter.open();
 
         Cursor cursor = sqLiteAdapter.readAll();
@@ -37,17 +42,18 @@ public class PokemonListAdapter extends BaseAdapter {
             pokemon.setName(cursor.getString(cursor.getColumnIndex(POKEMON_NAME)));
             pokemon.setLng(cursor.getInt(cursor.getColumnIndex(POKEMON_LNG)));
             pokemon.setLat(cursor.getInt(cursor.getColumnIndex(POKEMON_LAT)));
-            pokemons.add(pokemon);
+            this.pokemon.add(pokemon);
         }
         while (cursor.moveToNext());
 
         sqLiteAdapter.close();
+    }
 
     @Override
-    public int getCount() { return pokemons.size(); }
+    public int getCount() { return pokemon.size(); }
 
     @Override
-    public Object getItem(int position) { return pokemons.get(position)}
+    public Object getItem(int position) { return pokemon.get(position);}
 
     @Override
     public long getItemId(int position) {
@@ -62,15 +68,16 @@ public class PokemonListAdapter extends BaseAdapter {
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.custom_list_item, parent, false);
                 holder = new ViewHolder();
-                holder.textViewId = (TextView) convertView.findViewById(R.id.textViewId);
-                holder.textViewName = (TextView) convertView.findViewById(R.id.textViewName);
+                //holder.textViewId = (TextView) convertView.findViewById(R.id.textViewId);
+                //holder.textViewName = (TextView) convertView.findViewById(R.id.textViewName);
+                //holder.textViewAge = (TextView) convertView.findViewById(R.id.textViewAge);
 
                 convertView.setTag(holder);
-                pokemon = getItem(position);
+                //pokemon = getItem(position);
 
-                holder.textViewId.setText(person.getId().toString());
-                holder.textViewName.setText(person.getName());
-                holder.textViewAge.setText(person.getAge().toString());
+                //holder.textViewId.setText(person.getId().toString());
+                //holder.textViewName.setText(person.getName());
+                //holder.textViewAge.setText(person.getAge().toString());
 
             }
             else {
@@ -90,5 +97,6 @@ public class PokemonListAdapter extends BaseAdapter {
         static class ViewHolder {
             TextView textViewId;
             TextView textViewName;
+            TextView textViewAge;
         }
 }

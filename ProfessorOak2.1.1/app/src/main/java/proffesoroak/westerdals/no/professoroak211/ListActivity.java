@@ -26,10 +26,11 @@ public class ListActivity extends AppCompatActivity {
     }
 
     void getAndDisplayData() {
-        new AsyncTask<Void, Void, String> {
-            protected String doInBackground(final Void params) {
+        new AsyncTask<Void, Void, String>() {
+            protected String doInBackground(final Void... params){
                 try {
-                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();;
+                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+                    ;
                     connection.setRequestProperty("X-Token", "give me access plz");
                     try {
                         InputStream stream = connection.getInputStream();
@@ -43,13 +44,12 @@ public class ListActivity extends AppCompatActivity {
                         return "GOT ERROR WITH CODE: " + connection.getResponseCode();
 
                     }
-                }catch (IOException f) {
+                } catch (IOException f) {
                     f.printStackTrace();
                 }
 
-
-
-
+                return "lol";
             }
-        }
+        }.execute();
+    }
 }
