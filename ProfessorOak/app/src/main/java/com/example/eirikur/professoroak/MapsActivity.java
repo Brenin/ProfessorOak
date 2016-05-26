@@ -1,11 +1,16 @@
 package com.example.eirikur.professoroak;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -30,6 +36,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String apiUrl = "http://10.0.3.2:2389/secret";
     String locations = "https://locations.lehmann.tech/locations";
     private GoogleMap mMap;
+
+    private ArrayList<Pokemon> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +47,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        Button pokemonButton = (Button) findViewById(R.id.PokemonList);
+        Button scanButton = (Button) findViewById(R.id.scanButton);
+    }
+
+    public void PokemonListClick(View view){
+        Intent intent = new Intent(this, PokemonListActivity.class);
+        intent.putExtra("pokemonList", list);
+        startActivity(intent);
+    }
+
+    void MyPokemonsClick(View view){
+        Intent intent = new Intent(this, MyPokemonsActivity.class);
+        startActivity(intent);
+    }
+
+    public void ScannerClick(View view){
+        Intent intent = new Intent(
+                "com.google.zxing.client.android.SCAN");
+        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+        startActivityForResult(intent, 0);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                String contents = intent.getStringExtra("SCAN_RESULT"); // This will contain your scan result
+                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+                celebrate();
+            }
+        }
+    }
+
+    void celebrate(){
+        String message = "Woopi!";
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_LONG;
+        Toast.makeText(context, message, duration).show();
     }
 
     @Override
@@ -47,9 +93,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add a marker in Oslo and move the camera
         LatLng oslo = new LatLng(59.9139, 10.7522);
-        mMap.addMarker(new MarkerOptions()
-                .position(oslo)
-                .title("Marker in Oslo"));
         moveCamera(oslo);
 
         if (ActivityCompat.checkSelfPermission(this,
@@ -135,8 +178,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     void parseData(String response){
-        StringBuilder sb = new StringBuilder();
-
         try {
             JSONArray jsonArray = new JSONArray(response);
 
@@ -147,6 +188,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String itemLat = item.getString("lat");
                 String itemLng = item.getString("lng");
 
+                Pokemon pokemon = new Pokemon(itemId, itemName, itemLat, itemLng);
+                list.add(pokemon);
+
                 Float lat = Float.parseFloat(itemLat);
                 Float lng = Float.parseFloat(itemLng);
                 LatLng marker = new LatLng(lat, lng);
@@ -155,7 +199,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .position(marker)
                         .title(itemName));
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }

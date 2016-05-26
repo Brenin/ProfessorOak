@@ -1,3 +1,9 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.eirikur.professoroak.MapsActivity" >
+
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -5,5 +11,30 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.eirikur.professoroak.MapsActivity"
-    />
+    tools:context="com.example.eirikur.professoroak.MapsActivity" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/availiblePokemons"
+        android:id="@+id/PokemonList"
+        android:layout_gravity="left|top"
+        android:onClick="PokemonListClick" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/scanner"
+        android:id="@+id/scanButton"
+        android:layout_gravity="center_horizontal|top"
+        android:onClick="ScannerClick"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/myPokemons"
+        android:id="@+id/MyPokemons"
+        android:layout_gravity="center_horizontal|bottom"
+        android:onClick="MyPokemonsClick" />
+
+</FrameLayout>
