@@ -58,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
-    void MyPokemonsClick(View view){
+    public void MyPokemonsClick(View view){
         Intent intent = new Intent(this, MyPokemonsActivity.class);
         startActivity(intent);
     }
