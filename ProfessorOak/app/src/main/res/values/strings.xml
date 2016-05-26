@@ -3,6 +3,5 @@
     <string name="title_activity_maps">Map</string>
 
     <string name="availiblePokemons">Availible\nPokemons</string>
-    <string name="scanner">Scan barcode</string>
     <string name="myPokemons">My Pokemons</string>
 </resources>

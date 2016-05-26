@@ -19,22 +19,20 @@
         android:text="@string/availiblePokemons"
         android:id="@+id/PokemonList"
         android:layout_gravity="left|top"
-        android:onClick="PokemonListClick" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/scanner"
-        android:id="@+id/scanButton"
-        android:layout_gravity="center_horizontal|top"
-        android:onClick="ScannerClick"/>
+        android:onClick="availiblePokemonListClick" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/myPokemons"
         android:id="@+id/MyPokemons"
-        android:layout_gravity="center_horizontal|bottom"
-        android:onClick="MyPokemonsClick" />
+        android:layout_gravity="center_horizontal|top"
+        android:onClick="MyPokemonClickList" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_gravity="center" />
 
 </FrameLayout>

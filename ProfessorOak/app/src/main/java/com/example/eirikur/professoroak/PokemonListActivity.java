@@ -12,7 +12,7 @@ public class PokemonListActivity extends AppCompatActivity {
     private ArrayList<Pokemon> list = new ArrayList<>();
     private ArrayList<String> parsedList = new ArrayList<>();
     private ListView listView;
-    StringBuilder sb = new StringBuilder();;
+    StringBuilder sb = new StringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

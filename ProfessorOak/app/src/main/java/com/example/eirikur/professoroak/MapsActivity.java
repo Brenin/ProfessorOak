@@ -1,15 +1,21 @@
 package com.example.eirikur.professoroak;
 
 import android.Manifest;
-import android.content.Context;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,6 +32,8 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,58 +41,122 @@ import java.util.Scanner;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    String apiUrl = "http://10.0.3.2:2389/secret";
+    String apiUrl = "https://locations.lehmann.tech/pokemon/(id-en)3.";
     String locations = "https://locations.lehmann.tech/locations";
     private GoogleMap mMap;
-
-    private ArrayList<Pokemon> list = new ArrayList<>();
+    private NfcAdapter nfcAdapter;
+    private ArrayList<Pokemon> listAvailible = new ArrayList<>();
+    private ArrayList<Pokemon> listCaptured = new ArrayList<>();
+    private ProgressBar spinner;
+    private String test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        spinner = (ProgressBar) findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Button pokemonButton = (Button) findViewById(R.id.PokemonList);
-        Button scanButton = (Button) findViewById(R.id.scanButton);
+        initNFC();
     }
 
-    public void PokemonListClick(View view){
-        Intent intent = new Intent(this, PokemonListActivity.class);
-        intent.putExtra("pokemonList", list);
-        startActivity(intent);
-    }
+    void initNFC(){
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-    public void MyPokemonsClick(View view){
-        Intent intent = new Intent(this, MyPokemonsActivity.class);
-        startActivity(intent);
-    }
-
-    public void ScannerClick(View view){
-        Intent intent = new Intent(
-                "com.google.zxing.client.android.SCAN");
-        intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
-        startActivityForResult(intent, 0);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (requestCode == 0) {
-            if (resultCode == RESULT_OK) {
-                String contents = intent.getStringExtra("SCAN_RESULT"); // This will contain your scan result
-                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-                celebrate();
-            }
+        if(nfcAdapter != null && nfcAdapter.isEnabled()){
+            Toast.makeText(this, "NFC availible", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "Please turn on NFC", Toast.LENGTH_LONG).show();
         }
     }
 
-    void celebrate(){
-        String message = "Woopi!";
-        Context context = getApplicationContext();
-        int duration = Toast.LENGTH_LONG;
-        Toast.makeText(context, message, duration).show();
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+
+        if(intent.hasExtra(NfcAdapter.EXTRA_TAG)){
+            Toast.makeText(this, "NFC intent received", Toast.LENGTH_SHORT).show();
+
+            Parcelable[] parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+            if(parcelables != null && parcelables.length > 0){
+                readTextFromMessage((NdefMessage)parcelables[0]);
+            } else {
+                Toast.makeText(this, "No NDEF message found", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        enableForegroundDispatchSystem();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause(){
+        disableForegroundDispatchSystem();
+        super.onPause();
+    }
+
+    private void readTextFromMessage(NdefMessage ndefMessage){
+        NdefRecord[] ndefRecords = ndefMessage.getRecords();
+
+        if(ndefRecords != null && ndefRecords.length > 0){
+            NdefRecord ndefRecord = ndefRecords[0];
+            String tagcontent = getTextFromNdefRecord(ndefRecord);
+            Toast.makeText(this, tagcontent, Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "No NDEF records found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String getTextFromNdefRecord(NdefRecord ndefRecord){
+        String tagContent = null;
+        try {
+            byte[] payload = ndefRecord.getPayload();
+            String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
+            int languageSize = payload[0] & 0063;
+            tagContent = new String(payload, languageSize + 1,
+                    payload.length - languageSize - 1, textEncoding);
+        } catch (UnsupportedEncodingException e){
+            Log.e("GetTextFromNdefRecord", e.getMessage(), e);
+        }
+
+        return tagContent;
+    }
+
+    private void enableForegroundDispatchSystem(){
+        Intent intent = new Intent(this, MapsActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        IntentFilter[] intentFilters = new IntentFilter[]{};
+        nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null);
+    }
+
+    private void disableForegroundDispatchSystem(){
+        nfcAdapter.disableForegroundDispatch(this);
+    }
+
+    public void availiblePokemonListClick(View view){
+        spinner.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, PokemonListActivity.class);
+        intent.putExtra("pokemonList", listAvailible);
+        spinner.setVisibility(View.GONE);
+        startActivity(intent);
+    }
+
+    public void MyPokemonClickList(View view){
+        spinner.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, MyPokemonsActivity.class);
+        intent.putExtra("pokemonList", test);
+        spinner.setVisibility(View.GONE);
+        startActivity(intent);
     }
 
     @Override
@@ -114,6 +186,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         initListeners();
         getAndDisplayData();
+        fetchMyPokemons();
+        spinner.setVisibility(View.GONE);
     }
 
     public void initListeners() {
@@ -140,7 +214,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void moveCamera(LatLng point){
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
     }
 
     void getAndDisplayData() {
@@ -172,12 +246,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             protected void onPostExecute(final String response) {
                 super.onPostExecute(response);
-                parseData(response);
+                parseData(response, "1");
             }
         }.execute();
     }
 
-    void parseData(String response){
+    void parseData(String response, String chooseList){
         try {
             JSONArray jsonArray = new JSONArray(response);
 
@@ -189,7 +263,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String itemLng = item.getString("lng");
 
                 Pokemon pokemon = new Pokemon(itemId, itemName, itemLat, itemLng);
-                list.add(pokemon);
+                if(chooseList == "1"){
+                    listAvailible.add(pokemon);
+                } else {
+                    listCaptured.add(pokemon);
+                }
 
                 Float lat = Float.parseFloat(itemLat);
                 Float lng = Float.parseFloat(itemLng);
@@ -202,5 +280,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    void fetchMyPokemons() {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(final Void... params) {
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+                    connection.setRequestProperty("X-Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.IlByb2Zlc3Nvck9hayI.ZX5O-gmxK-ctYGtOoZnrEw1Dg0joIQ9-GGz0ycA8fNA");
+
+                    try {
+                        OutputStream outputStream = connection.getOutputStream();
+
+                        String id = "fj9sfoina9briu420";
+
+                        byte[] bytes = id.getBytes();
+                        outputStream.write(bytes);
+                        outputStream.flush();
+
+                        if(connection.getResponseCode() == 200){
+                            id += " OK";
+                        } else if(connection.getResponseCode() == 420){
+                            id += " Error" + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
+                        } else {
+                            id += " Error" + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
+                        }
+
+                        return id;
+                    } catch (Exception e) {
+                        return "GOT ERROR WITH CODE: " + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(final String response) {
+                super.onPostExecute(response);
+                test = response.toString();
+                //parseData(response, "2");
+            }
+        }.execute();
     }
 }
