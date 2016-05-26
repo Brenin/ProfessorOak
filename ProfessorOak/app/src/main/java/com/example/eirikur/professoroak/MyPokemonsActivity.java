@@ -20,20 +20,18 @@ public class MyPokemonsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_pokemons);
 
         listView = (ListView) findViewById(R.id.MyPokemonsListView);
-
         Bundle extras = getIntent().getExtras();
         if(extras != null){
-            sb.append(extras.getString("pokemonList"));
+            list = extras.getParcelableArrayList("pokemonList");
         }
 
-        //for(int i = 0; i < list.size(); i++){
-        //    sb.append("Name: " + list.get(i).getName()
-        //            + "\nID: " + list.get(i).getId()
-        //    );
-        //    parsedList.add(sb.toString());
-        //    sb.setLength(0);
-        //}
-        parsedList.add(sb.toString());
+        for(int i = 0; i < list.size(); i++){
+            sb.append("Name: " + list.get(i).getName()
+                    + "\nID: " + list.get(i).getId()
+            );
+            parsedList.add(sb.toString());
+            sb.setLength(0);
+        }
         displayData();
     }
 

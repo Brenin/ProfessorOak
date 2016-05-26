@@ -19,6 +19,11 @@ public class Pokemon implements Parcelable{
         setLng(lng);
     }
 
+    public Pokemon(String id, String name){
+        setId(id);
+        setName(name);
+    }
+
     protected Pokemon(Parcel in) {
         id = in.readString();
         name = in.readString();

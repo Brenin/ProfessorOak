@@ -15,7 +15,7 @@ public class SQLiteAdapter {
     public static final int DATABASE_VERSION = 1;
     public static final String TABLE_NAME="pokemon";
 
-    public static final String POKEMON_ID = "id";
+    public static final String POKEMON_ID = "_id";
     public static final String POKEMON_NAME = "name";
     public static final String POKEMON_LAT = "lat";
     public static final String POKEMON_LNG = "lng";

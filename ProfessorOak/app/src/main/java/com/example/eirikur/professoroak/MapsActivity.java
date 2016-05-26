@@ -24,6 +24,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,21 +36,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Scanner;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    String apiUrl = "https://locations.lehmann.tech/pokemon/(id-en)3.";
+    String p0 = "s8f9jwewe89fhalifnln39";
+    String p1 = "fadah89dhadiulabsayub73";
+    String p2 = "fj9sfoina9briu420";
+    String apiUrl = "https://locations.lehmann.tech/pokemon/";
     String locations = "https://locations.lehmann.tech/locations";
     private GoogleMap mMap;
     private NfcAdapter nfcAdapter;
     private ArrayList<Pokemon> listAvailible = new ArrayList<>();
     private ArrayList<Pokemon> listCaptured = new ArrayList<>();
     private ProgressBar spinner;
-    private String test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void MyPokemonClickList(View view){
         spinner.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, MyPokemonsActivity.class);
-        intent.putExtra("pokemonList", test);
+        intent.putExtra("pokemonList", listCaptured);
         spinner.setVisibility(View.GONE);
         startActivity(intent);
     }
@@ -186,7 +192,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         initListeners();
         getAndDisplayData();
-        fetchMyPokemons();
+        fetchMyPokemons(p0);
+        fetchMyPokemons(p1);
+        fetchMyPokemons(p2);
         spinner.setVisibility(View.GONE);
     }
 
@@ -246,12 +254,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             protected void onPostExecute(final String response) {
                 super.onPostExecute(response);
-                parseData(response, "1");
+                parseData(response);
             }
         }.execute();
     }
 
-    void parseData(String response, String chooseList){
+    void parseData(String response){
         try {
             JSONArray jsonArray = new JSONArray(response);
 
@@ -263,11 +271,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String itemLng = item.getString("lng");
 
                 Pokemon pokemon = new Pokemon(itemId, itemName, itemLat, itemLng);
-                if(chooseList == "1"){
-                    listAvailible.add(pokemon);
-                } else {
-                    listCaptured.add(pokemon);
-                }
+                listAvailible.add(pokemon);
 
                 Float lat = Float.parseFloat(itemLat);
                 Float lng = Float.parseFloat(itemLng);
@@ -282,32 +286,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    void fetchMyPokemons() {
+    void fetchMyPokemons(final String api) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(final Void... params) {
                 try {
-                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
+                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl + api).openConnection();
                     connection.setRequestProperty("X-Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.IlByb2Zlc3Nvck9hayI.ZX5O-gmxK-ctYGtOoZnrEw1Dg0joIQ9-GGz0ycA8fNA");
 
                     try {
-                        OutputStream outputStream = connection.getOutputStream();
+                        InputStream inputStream = connection.getInputStream();
+                        StringBuilder sb = new StringBuilder();
 
-                        String id = "fj9sfoina9briu420";
+                        Scanner scanner = new Scanner(inputStream);
 
-                        byte[] bytes = id.getBytes();
-                        outputStream.write(bytes);
-                        outputStream.flush();
-
-                        if(connection.getResponseCode() == 200){
-                            id += " OK";
-                        } else if(connection.getResponseCode() == 420){
-                            id += " Error" + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
-                        } else {
-                            id += " Error" + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
+                        while (scanner.hasNextLine()) {
+                            sb.append(scanner.nextLine());
                         }
 
-                        return id;
+                        return sb.toString();
                     } catch (Exception e) {
                         return "GOT ERROR WITH CODE: " + connection.getResponseCode() + " with message: " + connection.getResponseMessage();
                     }
@@ -320,9 +317,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             protected void onPostExecute(final String response) {
                 super.onPostExecute(response);
-                test = response.toString();
-                //parseData(response, "2");
+                parseData2(response);
             }
         }.execute();
+    }
+
+    void parseData2(String response){
+        try {
+            JSONObject json = new JSONObject(response);
+            Pokemon pokemon = new Pokemon(json.getString("id"), json.getString("name"));
+            listCaptured.add(pokemon);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
