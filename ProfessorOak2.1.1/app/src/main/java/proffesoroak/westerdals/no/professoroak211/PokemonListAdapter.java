@@ -18,8 +18,8 @@ public class PokemonListAdapter extends BaseAdapter {
 
     String POKEMON_ID;
     String POKEMON_NAME;
-    String POKEMON_LNG;
-    String POKEMON_LAT;
+    Float POKEMON_LNG;
+    Float POKEMON_LAT;
 
     private List<Pokemon> pokemon = new ArrayList<>();
     private Context context;
