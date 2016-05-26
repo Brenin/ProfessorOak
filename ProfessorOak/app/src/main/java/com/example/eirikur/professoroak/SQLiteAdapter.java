@@ -37,7 +37,6 @@ public class SQLiteAdapter {
         if(preferences != null){
             id = preferences.getLong("nextId", 1);
         }
-
     }
 
     public SQLiteAdapter open () {
@@ -59,8 +58,6 @@ public class SQLiteAdapter {
         editor.commit();
 
         return id++;
-
-
     }
 
     public Cursor readAll() {
@@ -83,8 +80,6 @@ public class SQLiteAdapter {
         //return (numberOfRowsUpdated == 1);
         return false;
     }
-
-
 
     public void close() {
         sqLiteDatabase.close();

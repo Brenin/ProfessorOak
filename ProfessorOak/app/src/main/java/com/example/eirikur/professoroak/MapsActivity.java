@@ -22,10 +22,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,13 +34,10 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Scanner;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -50,10 +47,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String p2 = "fj9sfoina9briu420";
     String apiUrl = "https://locations.lehmann.tech/pokemon/";
     String locations = "https://locations.lehmann.tech/locations";
+
     private GoogleMap mMap;
     private NfcAdapter nfcAdapter;
     private ArrayList<Pokemon> listAvailible = new ArrayList<>();
     private ArrayList<Pokemon> listCaptured = new ArrayList<>();
+    private ArrayList<String> checkList = new ArrayList<>();
     private ProgressBar spinner;
 
     @Override
@@ -191,10 +190,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setMyLocationEnabled(true);
 
         initListeners();
-        getAndDisplayData();
         fetchMyPokemons(p0);
         fetchMyPokemons(p1);
         fetchMyPokemons(p2);
+        getAndDisplayData();
         spinner.setVisibility(View.GONE);
     }
 
@@ -202,9 +201,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
-                mMap.addMarker(new MarkerOptions()
-                        .position(point)
-                        .title("Hello Professor Oak"));
                 moveCamera(point);
             }
         });
@@ -212,9 +208,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng point) {
-                mMap.addMarker(new MarkerOptions()
-                        .position(point)
-                        .title("Hello Professor Oak"));
                 moveCamera(point);
             }
         });
@@ -270,8 +263,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String itemLat = item.getString("lat");
                 String itemLng = item.getString("lng");
 
-                Pokemon pokemon = new Pokemon(itemId, itemName, itemLat, itemLng);
-                listAvailible.add(pokemon);
+                Pokemon pokemon = new Pokemon(itemId, itemName);
+
+                if(checkList.contains(itemName)){
+                    Float lat = Float.parseFloat(itemLat);
+                    Float lng = Float.parseFloat(itemLng);
+                    LatLng marker = new LatLng(lat, lng);
+
+                    mMap.addMarker(new MarkerOptions()
+                            .position(marker)
+                            .title(itemName + " is already captured")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                } else {
+                    listAvailible.add(pokemon);
+                }
 
                 Float lat = Float.parseFloat(itemLat);
                 Float lng = Float.parseFloat(itemLng);
@@ -279,7 +284,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 mMap.addMarker(new MarkerOptions()
                         .position(marker)
-                        .title(itemName));
+                        .title(itemName + " needs to be captured"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -325,7 +330,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     void parseData2(String response){
         try {
             JSONObject json = new JSONObject(response);
-            Pokemon pokemon = new Pokemon(json.getString("id"), json.getString("name"));
+            Pokemon pokemon = new Pokemon(json.getString("_id"), json.getString("name"));
+            checkList.add(json.getString("name"));
             listCaptured.add(pokemon);
         } catch (JSONException e) {
             e.printStackTrace();
