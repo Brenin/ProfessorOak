@@ -1,8 +1,6 @@
 package com.example.eirikur.professoroak;
 
 import android.os.AsyncTask;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
 import org.json.JSONArray;
 import org.json.JSONException;

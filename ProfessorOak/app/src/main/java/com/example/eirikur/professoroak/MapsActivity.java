@@ -40,7 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locations = "https://locations.lehmann.tech/locations";
 
     HTTPRequests httpRequests;
-    private GoogleMap mMap;
+    public static GoogleMap mMap;
     private Button myPokemonbtn;
     private Button availiblePokemonbtn;
     private Button scanbtn;
@@ -63,15 +63,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-    void initButtons(){
+    void initStuff(){
         myPokemonbtn = (Button) findViewById(R.id.MyPokemons);
+        myPokemonbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(MyPokemonsActivity.class, listCaptured);
+            }
+        });
+
         availiblePokemonbtn = (Button) findViewById(R.id.PokemonList);
+        availiblePokemonbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(PokemonListActivity.class, listAvailible);
+            }
+        });
+
         scanbtn = (Button) findViewById(R.id.scanButton);
+        scanbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(ScanActivity.class, null);
+            }
+        });
 
-        initListeners();
-    }
-
-    public void initListeners() {
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
@@ -83,27 +99,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng point) {
                 moveCamera(point);
-            }
-        });
-
-        myPokemonbtn.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                whereTo(MyPokemonsActivity.class, listCaptured);
-            }
-        });
-
-        availiblePokemonbtn.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                whereTo(PokemonListActivity.class, listAvailible);
-            }
-        });
-
-        scanbtn.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                whereTo(ScanActivity.class, null);
             }
         });
     }
@@ -122,7 +117,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Oslo and move the camera
         LatLng oslo = new LatLng(59.9139, 10.7522);
         moveCamera(oslo);
 
@@ -142,11 +136,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
-        initButtons();
+        initStuff();
 
-        fetchMyPokemons(p0);
-        fetchMyPokemons(p1);
-        fetchMyPokemons(p2);
+        fetchMyFreePokemons(p0);
+        fetchMyFreePokemons(p1);
+        fetchMyFreePokemons(p2);
         getAndDisplayData();
         spinner.setVisibility(View.GONE);
     }
@@ -204,32 +198,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Pokemon pokemon = new Pokemon(itemId, itemName);
 
                 if(checkList.contains(itemName)){
-                    Float lat = Float.parseFloat(itemLat);
-                    Float lng = Float.parseFloat(itemLng);
-                    LatLng marker = new LatLng(lat, lng);
-
-                    mMap.addMarker(new MarkerOptions()
-                            .position(marker)
-                            .title(itemName + " is already captured")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    putMarker(itemLat, itemLng, itemName, "1");
                 } else {
                     listAvailible.add(pokemon);
+                    putMarker(itemLat, itemLng, itemName, "2");
                 }
-
-                Float lat = Float.parseFloat(itemLat);
-                Float lng = Float.parseFloat(itemLng);
-                LatLng marker = new LatLng(lat, lng);
-
-                mMap.addMarker(new MarkerOptions()
-                        .position(marker)
-                        .title(itemName + " needs to be captured"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    void fetchMyPokemons(final String api) {
+    void putMarker(String itemLat, String itemLng, String itemName, String hax){
+        Float lat = Float.parseFloat(itemLat);
+        Float lng = Float.parseFloat(itemLng);
+        LatLng marker = new LatLng(lat, lng);
+
+        if(hax == "1"){
+            mMap.addMarker(new MarkerOptions()
+                    .position(marker)
+                    .title(itemName + " is already captured")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        } else {
+            mMap.addMarker(new MarkerOptions()
+                    .position(marker)
+                    .title(itemName + " needs to be captured"));
+        }
+    }
+
+    void fetchMyFreePokemons(final String api) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(final Void... params) {

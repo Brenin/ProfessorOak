@@ -58,17 +58,17 @@ public class ScanActivity extends AppCompatActivity {
         captureBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                pokemonID = editText.getText().toString();
+                pokemonID = editText.getText().toString().substring(1);
                 if(pokemonID == null){
                     highFive("Invalid or empty String");
                 } else {
-                    fetchMyPokemons(pokemonID);
+                    fetchMyPokemon(pokemonID);
                 }
             }
         });
     }
 
-    void fetchMyPokemons(final String api) {
+    void fetchMyPokemon(final String api) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(final Void... params) {
@@ -109,8 +109,8 @@ public class ScanActivity extends AppCompatActivity {
             JSONObject json = new JSONObject(response);
             Pokemon pokemon = new Pokemon(json.getString("_id"), json.getString("name"));
             highFive(pokemon.getName() + " captured");
-            MapsActivity.checkList.add(json.getString("name"));
             MapsActivity.listCaptured.add(pokemon);
+            MapsActivity.listAvailible.remove(pokemon);
         } catch (JSONException e) {
             highFive(response);
             e.printStackTrace();
