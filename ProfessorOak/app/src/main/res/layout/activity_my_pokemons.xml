@@ -39,6 +39,5 @@
         android:text="@string/highScore"
         android:id="@+id/highScoreButton"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="HighScoreClick"/>
+        android:layout_alignParentEnd="true"/>
 </RelativeLayout>

@@ -1,29 +1,20 @@
 package com.example.eirikur.professoroak;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -35,7 +26,6 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -49,10 +39,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String apiUrl = "https://locations.lehmann.tech/pokemon/";
     String locations = "https://locations.lehmann.tech/locations";
 
+    HTTPRequests httpRequests;
     private GoogleMap mMap;
-    protected final static ArrayList<Pokemon> listAvailible = new ArrayList<>();
-    protected final static ArrayList<Pokemon> listCaptured = new ArrayList<>();
-    protected final static ArrayList<String> checkList = new ArrayList<>();
+    private Button myPokemonbtn;
+    private Button availiblePokemonbtn;
+    private Button scanbtn;
+
+    protected static ArrayList<Pokemon> listAvailible = new ArrayList<>();
+    protected static ArrayList<Pokemon> listCaptured = new ArrayList<>();
+    protected static ArrayList<String> checkList = new ArrayList<>();
     private ProgressBar spinner;
 
     @Override
@@ -68,25 +63,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-    public void availiblePokemonListClick(View view){
-        spinner.setVisibility(View.VISIBLE);
-        Intent intent = new Intent(this, PokemonListActivity.class);
-        intent.putExtra("pokemonList", listAvailible);
-        spinner.setVisibility(View.GONE);
-        startActivity(intent);
+    void initButtons(){
+        myPokemonbtn = (Button) findViewById(R.id.MyPokemons);
+        availiblePokemonbtn = (Button) findViewById(R.id.PokemonList);
+        scanbtn = (Button) findViewById(R.id.scanButton);
+
+        initListeners();
     }
 
-    public void MyPokemonClickList(View view){
-        spinner.setVisibility(View.VISIBLE);
-        Intent intent = new Intent(this, MyPokemonsActivity.class);
-        intent.putExtra("pokemonList", listCaptured);
-        spinner.setVisibility(View.GONE);
-        startActivity(intent);
+    public void initListeners() {
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng point) {
+                moveCamera(point);
+            }
+        });
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng point) {
+                moveCamera(point);
+            }
+        });
+
+        myPokemonbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(MyPokemonsActivity.class, listCaptured);
+            }
+        });
+
+        availiblePokemonbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(PokemonListActivity.class, listAvailible);
+            }
+        });
+
+        scanbtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                whereTo(ScanActivity.class, null);
+            }
+        });
     }
 
-    public void ScanCodeClick(View view){
+    private void whereTo(Class target, ArrayList<Pokemon> payload){
         spinner.setVisibility(View.VISIBLE);
-        Intent intent = new Intent(this, ScanActivity.class);
+        Intent intent = new Intent(MapsActivity.this, target);
+        if(payload != null){
+            intent.putExtra("pokemonList", payload);
+        }
         spinner.setVisibility(View.GONE);
         startActivity(intent);
     }
@@ -115,29 +142,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
+        initButtons();
 
-        initListeners();
         fetchMyPokemons(p0);
         fetchMyPokemons(p1);
         fetchMyPokemons(p2);
         getAndDisplayData();
         spinner.setVisibility(View.GONE);
-    }
-
-    public void initListeners() {
-        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng point) {
-                moveCamera(point);
-            }
-        });
-
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng point) {
-                moveCamera(point);
-            }
-        });
     }
 
     public void moveCamera(LatLng point){

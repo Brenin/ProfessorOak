@@ -1,5 +1,6 @@
 package com.example.eirikur.professoroak;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -24,10 +25,28 @@ public class MyPokemonsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_pokemons);
 
-        highScorebtn = (Button) findViewById(R.id.highScoreButton);
+
         listView = (ListView) findViewById(R.id.MyPokemonsListView);
 
         Bundle extras = getIntent().getExtras();
+        parseData(extras);
+
+        initStuff();
+    }
+
+    void initStuff(){
+        highScorebtn = (Button) findViewById(R.id.highScoreButton);
+
+        highScorebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MyPokemonsActivity.this, HighScoreActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    void parseData(Bundle extras){
         if(extras != null){
             list = extras.getParcelableArrayList("pokemonList");
         }
@@ -40,16 +59,6 @@ public class MyPokemonsActivity extends AppCompatActivity {
             sb.setLength(0);
         }
         displayData();
-        initListeners();
-    }
-
-    private void initListeners() {
-        highScorebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
     }
 
     void displayData(){
