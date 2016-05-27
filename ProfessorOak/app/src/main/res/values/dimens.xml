@@ -4,4 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="imageH">250dp</dimen>
     <dimen name="imageW">250dp</dimen>
+    <dimen name="textH">40dp</dimen>
+    <dimen name="textW">300dp</dimen>
+    <dimen name="textSize">20dp</dimen>
 </resources>

@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -49,10 +50,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locations = "https://locations.lehmann.tech/locations";
 
     private GoogleMap mMap;
-    private NfcAdapter nfcAdapter;
-    private ArrayList<Pokemon> listAvailible = new ArrayList<>();
-    private ArrayList<Pokemon> listCaptured = new ArrayList<>();
-    private ArrayList<String> checkList = new ArrayList<>();
+    protected final static ArrayList<Pokemon> listAvailible = new ArrayList<>();
+    protected final static ArrayList<Pokemon> listCaptured = new ArrayList<>();
+    protected final static ArrayList<String> checkList = new ArrayList<>();
     private ProgressBar spinner;
 
     @Override
@@ -66,86 +66,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        initNFC();
-    }
-
-    void initNFC(){
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
-        if(nfcAdapter != null && nfcAdapter.isEnabled()){
-            Toast.makeText(this, "NFC availible", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "Please turn on NFC", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent){
-        super.onNewIntent(intent);
-
-        if(intent.hasExtra(NfcAdapter.EXTRA_TAG)){
-            Toast.makeText(this, "NFC intent received", Toast.LENGTH_SHORT).show();
-
-            Parcelable[] parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-
-            if(parcelables != null && parcelables.length > 0){
-                readTextFromMessage((NdefMessage)parcelables[0]);
-            } else {
-                Toast.makeText(this, "No NDEF message found", Toast.LENGTH_SHORT).show();
-            }
-
-        }
-    }
-
-    @Override
-    protected void onResume(){
-        enableForegroundDispatchSystem();
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause(){
-        disableForegroundDispatchSystem();
-        super.onPause();
-    }
-
-    private void readTextFromMessage(NdefMessage ndefMessage){
-        NdefRecord[] ndefRecords = ndefMessage.getRecords();
-
-        if(ndefRecords != null && ndefRecords.length > 0){
-            NdefRecord ndefRecord = ndefRecords[0];
-            String tagcontent = getTextFromNdefRecord(ndefRecord);
-            Toast.makeText(this, tagcontent, Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "No NDEF records found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public String getTextFromNdefRecord(NdefRecord ndefRecord){
-        String tagContent = null;
-        try {
-            byte[] payload = ndefRecord.getPayload();
-            String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
-            int languageSize = payload[0] & 0063;
-            tagContent = new String(payload, languageSize + 1,
-                    payload.length - languageSize - 1, textEncoding);
-        } catch (UnsupportedEncodingException e){
-            Log.e("GetTextFromNdefRecord", e.getMessage(), e);
-        }
-
-        return tagContent;
-    }
-
-    private void enableForegroundDispatchSystem(){
-        Intent intent = new Intent(this, MapsActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        IntentFilter[] intentFilters = new IntentFilter[]{};
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null);
-    }
-
-    private void disableForegroundDispatchSystem(){
-        nfcAdapter.disableForegroundDispatch(this);
     }
 
     public void availiblePokemonListClick(View view){
@@ -160,6 +80,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spinner.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, MyPokemonsActivity.class);
         intent.putExtra("pokemonList", listCaptured);
+        spinner.setVisibility(View.GONE);
+        startActivity(intent);
+    }
+
+    public void ScanCodeClick(View view){
+        spinner.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, ScanActivity.class);
         spinner.setVisibility(View.GONE);
         startActivity(intent);
     }
