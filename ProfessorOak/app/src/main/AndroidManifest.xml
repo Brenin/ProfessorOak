@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.eirikur.professoroak">
 
-    <uses-sdk android:minSdkVersion="10" />
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="23" />
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -59,7 +61,8 @@
 
         <activity android:name=".PokemonListActivity" />
         <activity android:name=".MyPokemonsActivity" />
-        <activity android:name=".ScanActivity"></activity>
+        <activity android:name=".ScanActivity" />
+        <activity android:name=".HighScoreActivity"></activity>
     </application>
 
 </manifest>

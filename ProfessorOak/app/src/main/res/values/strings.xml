@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name">ProfessorOak</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Gotta Catch Them All</string>
 
     <string name="availiblePokemons">Availible\nPokemons</string>
     <string name="myPokemons">My Pokemons</string>
     <string name="scanCode">Scan Code</string>
     <string name="capture">Capture it</string>
     <string name="captureInfo">Scan the NFC tag\nor type in the code below</string>
+    <string name="highScore">High Score</string>
 </resources>
