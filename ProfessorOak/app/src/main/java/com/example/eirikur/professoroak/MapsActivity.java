@@ -268,6 +268,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Pokemon pokemon = new Pokemon(json.getString("_id"), json.getString("name"));
             checkList.add(json.getString("name"));
             listCaptured.add(pokemon);
+            SQLiteAdapter adapter = new SQLiteAdapter(this);
+            adapter.open();
+            adapter.create(pokemon);
+            adapter.close();
         } catch (JSONException e) {
             e.printStackTrace();
         }

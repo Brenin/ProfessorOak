@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class SQLiteHelper extends SQLiteOpenHelper{
     private static final String SCRIPT_CREATE_DATABASE = "create table pokemon ("
-            + "_id integer primary key autoincrement, "
+            + "id integer primary key autoincrement, "
             + "name text not null, "
             + "lat real not null, "
             + "lng real not null);";
