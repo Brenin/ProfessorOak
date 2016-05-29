@@ -60,9 +60,10 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".PokemonListActivity" />
-        <activity android:name=".MyPokemonsActivity" />
+        <activity android:name=".MyPokemonActivity" />
         <activity android:name=".ScanActivity" />
-        <activity android:name=".HighScoreActivity"></activity>
+        <activity android:name=".HighScoreActivity">
+        </activity>
     </application>
 
 </manifest>

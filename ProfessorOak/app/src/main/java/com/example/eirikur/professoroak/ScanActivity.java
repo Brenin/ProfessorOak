@@ -58,17 +58,17 @@ public class ScanActivity extends AppCompatActivity {
         captureBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                pokemonID = editText.getText().toString().substring(1);
-                if(pokemonID == null){
+                pokemonID = editText.getText().toString();
+                if (pokemonID.isEmpty()){
                     highFive("Invalid or empty String");
                 } else {
-                    fetchMyPokemon(pokemonID);
+                    captureMyPokemon(pokemonID);
                 }
             }
         });
     }
 
-    void fetchMyPokemon(final String api) {
+    void captureMyPokemon(final String api) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(final Void... params) {
@@ -99,26 +99,42 @@ public class ScanActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(final String response) {
                 super.onPostExecute(response);
-                parseData2(response);
+                parseCapture(response);
             }
         }.execute();
     }
 
-    void parseData2(String response){
+    void parseCapture(String response){
         try {
             JSONObject json = new JSONObject(response);
             Pokemon pokemon = new Pokemon(json.getString("_id"), json.getString("name"));
-            highFive(pokemon.getName() + " captured");
-            MapsActivity.listCaptured.add(pokemon);
-            MapsActivity.listAvailible.remove(pokemon);
+
+            if(MapsActivity.checkList.contains(pokemon.getName())){
+                highFive("You have already captured " + pokemon.getName());
+            } else{
+                logPokemon(pokemon);
+                highFive(pokemon.getName() + " captured");
+                Intent intent = new Intent(this, MapsActivity.class);
+                startActivity(intent);
+            }
         } catch (JSONException e) {
-            highFive(response);
+            highFive("Invalid ID\n" + response);
             e.printStackTrace();
         }
     }
 
     public void highFive(String text){
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    void logPokemon(Pokemon pokemon){
+        SQLiteAdapter adapter = new SQLiteAdapter(this.getApplicationContext());
+        adapter.open();
+        adapter.create(pokemon);
+        adapter.close();
+        MapsActivity.checkList.add(pokemon.getName());
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 
     void initNFC(){
@@ -168,9 +184,8 @@ public class ScanActivity extends AppCompatActivity {
 
         if(ndefRecords != null && ndefRecords.length > 0){
             NdefRecord ndefRecord = ndefRecords[0];
-            String tagcontent = getTextFromNdefRecord(ndefRecord);
-            Toast.makeText(this, tagcontent, Toast.LENGTH_LONG).show();
-            editText.setText(tagcontent);
+            String tagContent = getTextFromNdefRecord(ndefRecord);
+            editText.setText(tagContent.toString().trim());
         } else {
             String error = "No NDEF records found";
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();

@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/background"
-    tools:context="com.example.eirikur.professoroak.MyPokemonsActivity">
+    tools:context=".MyPokemonActivity">
 
     <ImageView
         android:layout_width="@dimen/imageW"

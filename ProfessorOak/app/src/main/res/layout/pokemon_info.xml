@@ -19,5 +19,4 @@
         android:layout_alignLeft="@+id/name"
         android:text="TextView" />
 
-
 </LinearLayout>

@@ -8,8 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by Bruker on 26.05.2016.
  */
 public class SQLiteHelper extends SQLiteOpenHelper{
-    private static final String SCRIPT_CREATE_DATABASE = "create table pokemon ("
-            + "_id integer primary key, "
+    private static final String SCRIPT_CREATE_DATABASE = "CREATE TABLE IF NOT EXISTS pokemon ("
+            + "id integer PRIMARY KEY AUTOINCREMENT, "
             + "name text not null, "
             + "lat real not null, "
             + "lng real not null);";

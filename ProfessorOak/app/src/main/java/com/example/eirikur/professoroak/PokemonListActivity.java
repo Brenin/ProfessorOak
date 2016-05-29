@@ -13,11 +13,9 @@ import java.util.ArrayList;
 
 public class PokemonListActivity extends AppCompatActivity {
 
-    private ArrayList<Pokemon> list = new ArrayList<>();
     private ArrayList<String> parsedList = new ArrayList<>();
     private ListView listView;
     StringBuilder sb = new StringBuilder();
-    private Button highScorebtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,14 +24,12 @@ public class PokemonListActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.listView);
 
-        Bundle extras = getIntent().getExtras();
-        parseData(extras);
-
+        parseData();
         initStuff();
     }
 
     void initStuff(){
-        highScorebtn = (Button) findViewById(R.id.highScoreButton1);
+        Button highScorebtn = (Button) findViewById(R.id.highScoreButton1);
 
         highScorebtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,24 +40,16 @@ public class PokemonListActivity extends AppCompatActivity {
         });
     }
 
-    void parseData(Bundle extras){
-        if(extras != null){
-            list = extras.getParcelableArrayList("pokemonList");
-        }
+    void parseData(){
 
-        for(int i = 0; i < list.size(); i++){
-            sb.append("Name: " + list.get(i).getName()
-                    + "\nID: " + list.get(i).getId()
+        for(int i = 0; i < MapsActivity.listAvailable.size(); i++){
+            sb.append("Name: " + MapsActivity.listAvailable.get(i).getName()
+                    + "\nID: " + MapsActivity.listAvailable.get(i).getId()
             );
             parsedList.add(sb.toString());
             sb.setLength(0);
         }
         displayData();
-    }
-
-    public void HighScoreClick(View view){
-        Intent intent = new Intent(this, HighScoreActivity.class);
-        startActivity(intent);
     }
 
     void displayData(){

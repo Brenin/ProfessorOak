@@ -10,9 +10,9 @@ public class HighScoreActivity extends AppCompatActivity {
 
     private String url = "https://locations.lehmann.tech/scores";
     private ListView listView;
-    private ArrayList<Person> highScore = new ArrayList<>();
+    public static ArrayList<Person> highScore = new ArrayList<>();
 
-    HTTPRequests httpRequests = new HTTPRequests(url);
+    HTTPRequests httpRequests = new HTTPRequests();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,10 +20,14 @@ public class HighScoreActivity extends AppCompatActivity {
         setContentView(R.layout.activity_high_score);
 
         listView = (ListView) findViewById(R.id.highScoreView);
-
-        highScore = httpRequests.getWorkList();
-
+        httpRequests.getAndDisplayHighscore(url);
         displayData();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        highScore.clear();
     }
 
     void displayData(){

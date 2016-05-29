@@ -9,8 +9,8 @@ import android.os.Parcelable;
 public class Pokemon implements Parcelable{
     private String id;
     private String name;
-    private Float lat;
-    private Float lng;
+    private Float lat = 0.0f;
+    private Float lng = 0.0f;
 
     public Pokemon(String id, String name, String lat, String lng){
         setId(id);
