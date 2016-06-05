@@ -22,6 +22,6 @@ public class Person {
     }
 
     public String toString(){
-        return "Name: " + getName() + "\nScore: " + getScore();
+        return "Name: " + getName() + ", Score: " + getScore();
     }
 }

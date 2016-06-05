@@ -16,6 +16,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,6 +29,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class ScanActivity extends AppCompatActivity {
@@ -33,7 +40,9 @@ public class ScanActivity extends AppCompatActivity {
     private Button captureBtn;
 
     String pokemonID = null;
-    String apiUrl = "https://locations.lehmann.tech/pokemon/";
+    URLStrings urlStrings = new URLStrings();
+    public static ArrayList<String> checkList = new ArrayList<>();
+    HashMap<String, LatLng> capturedList = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +51,13 @@ public class ScanActivity extends AppCompatActivity {
 
         captureBtn = (Button) findViewById(R.id.captureButton);
         editText = (EditText) findViewById(R.id.captureCode);
+
+        for(Pokemon pokemon : MapsActivity.listAvailable){
+            Float lat = Float.parseFloat(pokemon.getLat());
+            Float lng = Float.parseFloat(pokemon.getLng());
+            LatLng marker = new LatLng(lat, lng);
+            capturedList.put(pokemon.toString(), marker);
+        }
 
         initListeners();
         initNFC();
@@ -62,7 +78,7 @@ public class ScanActivity extends AppCompatActivity {
                 if (pokemonID.isEmpty()){
                     highFive("Invalid or empty String");
                 } else {
-                    captureMyPokemon(pokemonID);
+                    captureMyPokemon(urlStrings.getCapture() + pokemonID);
                 }
             }
         });
@@ -73,7 +89,7 @@ public class ScanActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(final Void... params) {
                 try {
-                    HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl + api).openConnection();
+                    HttpURLConnection connection = (HttpURLConnection) new URL(api).openConnection();
                     connection.setRequestProperty("X-Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.IlByb2Zlc3Nvck9hayI.ZX5O-gmxK-ctYGtOoZnrEw1Dg0joIQ9-GGz0ycA8fNA");
 
                     try {
@@ -104,19 +120,36 @@ public class ScanActivity extends AppCompatActivity {
         }.execute();
     }
 
-    void parseCapture(String response){
+    public void parseCapture(String response){
         try {
             JSONObject json = new JSONObject(response);
-            Pokemon pokemon = new Pokemon(json.getString("_id"), json.getString("name"));
+            Pokemon pokemon = new Pokemon(json.getString("_id"),
+                    json.getString("name"),
+                    "",
+                    "");
 
-            if(MapsActivity.checkList.contains(pokemon.getName())){
+            if(checkList.contains(pokemon.toString())){
                 highFive("You have already captured " + pokemon.getName());
-            } else{
-                logPokemon(pokemon);
-                highFive(pokemon.getName() + " captured");
                 Intent intent = new Intent(this, MapsActivity.class);
                 startActivity(intent);
+            } else {
+                checkList.add(pokemon.toString());
+                logPokemon(pokemon);
+                highFive(pokemon.toString() + " captured");
+
+                highFive("2");
+                Marker marker = MapsActivity.markers.get(pokemon.toString());
+                MapsActivity.mMap.addMarker(new MarkerOptions()
+                        .position(marker.getPosition())
+                        .title(pokemon.toString() + " is captured")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                marker.remove();
+                highFive("3");
             }
+
+            Intent intent = new Intent(this, MapsActivity.class);
+            startActivity(intent);
+
         } catch (JSONException e) {
             highFive("Invalid ID\n" + response);
             e.printStackTrace();
@@ -128,13 +161,10 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     void logPokemon(Pokemon pokemon){
-        SQLiteAdapter adapter = new SQLiteAdapter(this.getApplicationContext());
+        SQLiteAdapter adapter = new SQLiteAdapter(this);
         adapter.open();
         adapter.create(pokemon);
         adapter.close();
-        MapsActivity.checkList.add(pokemon.getName());
-        Intent intent = new Intent(this, MapsActivity.class);
-        startActivity(intent);
     }
 
     void initNFC(){
@@ -185,7 +215,7 @@ public class ScanActivity extends AppCompatActivity {
         if(ndefRecords != null && ndefRecords.length > 0){
             NdefRecord ndefRecord = ndefRecords[0];
             String tagContent = getTextFromNdefRecord(ndefRecord);
-            editText.setText(tagContent.toString().trim());
+            editText.setText(tagContent.trim());
         } else {
             String error = "No NDEF records found";
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();

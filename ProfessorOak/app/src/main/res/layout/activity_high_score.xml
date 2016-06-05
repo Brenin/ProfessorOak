@@ -11,12 +11,11 @@
     tools:context="com.example.eirikur.professoroak.HighScoreActivity">
 
     <ImageView
-        android:layout_width="@dimen/imageW"
+        android:layout_width="fill_parent"
         android:layout_height="@dimen/imageH"
-        android:id="@+id/imageView4"
-        android:src="@drawable/pikachu"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/imageView2"
+        android:src="@drawable/logo"
+        android:layout_centerInParent="true" />
 
     <ListView
         android:layout_width="wrap_content"

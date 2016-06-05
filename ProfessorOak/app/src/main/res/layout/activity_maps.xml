@@ -16,8 +16,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/availiblePokemons"
-        android:id="@+id/PokemonList"
+        android:text="@string/highScore"
+        android:id="@+id/highScoreButton"
         android:layout_gravity="left|top"/>
 
     <Button

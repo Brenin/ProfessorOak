@@ -3,9 +3,10 @@ package com.example.eirikur.professoroak;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Created by Bruker on 26.05.2016.
@@ -13,10 +14,11 @@ import java.util.Map;
 public class SQLiteAdapter {
     public static final String DATABASE_NAME = "Pokemons";
     public static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME="pokemon";
+    public static final String TABLE_NAME="PokemonTableVersionTwo";
 
-    public static final String POKEMON_ID = "id";
+    public static final String ROW_ID = "id";
     public static final String POKEMON_NAME = "name";
+    public static final String POKEMON_ID = "pokemonID";
     public static final String POKEMON_LAT = "lat";
     public static final String POKEMON_LNG = "lng";
 
@@ -31,14 +33,14 @@ public class SQLiteAdapter {
     }
 
     public SQLiteAdapter open () {
-        databaseHelper = new SQLiteHelper(context,DATABASE_NAME,null,DATABASE_VERSION);
+        databaseHelper = new SQLiteHelper(context, DATABASE_NAME, null, DATABASE_VERSION);
         sqLiteDatabase = databaseHelper.getWritableDatabase();
         return this;
     }
 
     public long create(Pokemon pokemon) {
         ContentValues values = new ContentValues();
-        values.put(POKEMON_ID, id);
+        values.put(POKEMON_ID, pokemon.getId());
         values.put(POKEMON_NAME, pokemon.getName());
         values.put(POKEMON_LAT, pokemon.getLat());
         values.put(POKEMON_LNG, pokemon.getLng());
@@ -47,23 +49,35 @@ public class SQLiteAdapter {
         return id++;
     }
 
-    public String readAll() {
-        Cursor cursor = sqLiteDatabase.rawQuery("SELECT name FROM " + TABLE_NAME, null);
-        if(cursor.moveToFirst() && cursor.getCount() <= 1){
-            for(int i = 0; i < cursor.getCount(); i ++){
-                MapsActivity.checkList.add(cursor.getString(i));
-            }
-        }
+    public ArrayList<Pokemon> getAllObjects(){
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM " + TABLE_NAME, null);
 
-        cursor.close();
-        return "";
+        ArrayList<Pokemon> objectList = new ArrayList<>();
+
+        try {
+            if(cursor.moveToFirst()){
+                do {
+                    Pokemon pokemon = new Pokemon(cursor.getString(0),
+                            cursor.getString(1),
+                            cursor.getString(2),
+                            cursor.getString(3));
+                    objectList.add(pokemon);
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            cursor.close();
+        }
+        return objectList;
     }
 
     public boolean update(Long pokemonId, Pokemon pokemon) {
         ContentValues values = new ContentValues();
         values.put(POKEMON_NAME, pokemon.getName());
 
-        String whereClause = POKEMON_ID + " = ?";
+        String whereClause = ROW_ID + " = ?";
         //String[] whereArgs = new String[]{personId.toString()};
 
         //int numberOfRowsUpdated = sqLiteDatabase.update(TABLE_NAME, values, whereClause, whereArgs);
